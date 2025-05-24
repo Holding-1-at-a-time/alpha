@@ -177,7 +177,9 @@ export const {
       // Allows relative callback URLs
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
-      } else if (new URL(url).origin === baseUrl) return url
+      } else if (new URL(url).origin === baseUrl) {
+               return url
+             }
 
       return baseUrl
     },

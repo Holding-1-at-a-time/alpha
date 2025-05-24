@@ -19,7 +19,7 @@ export default defineSchema({
     email: v.string(),
     name: v.string(),
     tenantId: v.id("tenants"),
-    authProviderId: v.id("authProviders"), // ID from auth provider (Auth0, etc.)
+    authProviderId: v.id("authProviders"), // ID from auth provider (Auth0, etc(), // ID from auth provider (Auth0, etc.)
     role: v.string(), // admin, member, user
     status: v.string(), // active, invited, suspended
     lastLogin: v.optional(v.string()),
@@ -106,4 +106,14 @@ export default defineSchema({
     .index("by_email_and_tenant", ["email", "tenantId"])
     .index("by_token", ["token"])
     .index("by_tenant", ["tenantId"]),
+
+  authProviders: defineTable({
+    tenantId: v.id("tenants"),
+    providerId: v.string(),
+    providerName: v.string(),
+    updatedAt: v.string(),
+  })
+  .index("by_tenant", ["tenantId"])
+  .index("by_provider", ["providerId"])
+  .index("by_tenant_and_provider", ["tenantId", "providerId"]),
 });
