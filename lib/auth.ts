@@ -50,8 +50,8 @@ export async function registerUser(userData: {
     }
 
     // Call Convex mutation to create user
-    const result = await convexClient.mutation(api.auth.registerUser, userData)
-    return result
+    return await convexClient.mutation(api.auth.registerUser, userData);
+
   } catch (error) {
     logger.error("Failed to register user", error as Error)
     throw error
