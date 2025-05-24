@@ -1,9 +1,10 @@
 import type React from "react"
-import { Suspense } from "react"
-import { notFound } from "next/navigation"
+// Import the necessary components
 import { cookies } from "next/headers"
 import TenantLayout from "@/components/TenantLayout"
 import Loading from "@/app/global-components/Loading"
+import { Suspense } from "react"
+import { notFound } from "next/navigation"
 
 export default function TenantRootLayout({
   children,

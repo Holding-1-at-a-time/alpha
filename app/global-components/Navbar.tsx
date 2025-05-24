@@ -1,12 +1,16 @@
 "use client"
 
-import Link from "next/link"
+// Import the useAuth hook
+import { useAuth } from "@/app/providers/AuthProvider"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+// Update the Navbar component to use the auth context
 export default function Navbar() {
   const pathname = usePathname()
   const isTenantRoute = pathname.split("/").length > 1 && pathname.split("/")[1] !== ""
+  const { user, isAuthenticated, logout } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,9 +34,18 @@ export default function Navbar() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/pricing">Pricing</Link>
             </Button>
-            <Button size="sm" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                {user && <span className="hidden text-sm text-muted-foreground md:inline-block">{user.name}</span>}
+                <Button size="sm" variant="outline" onClick={() => logout()}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
           </div>
         </nav>
       </div>

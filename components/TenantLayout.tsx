@@ -1,19 +1,20 @@
 "use client"
 
-import type React from "react"
 import { useEffect } from "react"
-import { TenantProvider } from "@/lib/tenantContext"
-import { logger } from "@/lib/logger"
 
-interface TenantLayoutProps {
-  children: React.ReactNode
-  tenantId: string
-}
+// Import the useAuth hook
+import { useAuth } from "@/app/providers/AuthProvider"
 
+// Update the TenantLayout component to use the auth context
 export default function TenantLayout({ children, tenantId }: TenantLayoutProps) {
+  const { user } = useAuth()
+
   useEffect(() => {
-    logger.info(`Tenant layout mounted for tenant: ${tenantId}`)
-  }, [tenantId])
+    logger.info(`Tenant layout mounted for tenant: ${tenantId}`, {
+      userId: user?.id,
+      userRole: user?.role,
+    })
+  }, [tenantId, user])
 
   return (
     <TenantProvider tenantId={tenantId}>
@@ -24,6 +25,15 @@ export default function TenantLayout({ children, tenantId }: TenantLayoutProps) 
               <div className="h-8 w-8 rounded-full bg-primary/20"></div>
               <span className="font-medium capitalize">{tenantId} Workspace</span>
             </div>
+            {user && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{user.name}</span>
+                <div
+                  className="h-8 w-8 rounded-full bg-primary/20"
+                  style={{ backgroundImage: user.avatar ? `url(${user.avatar})` : undefined }}
+                ></div>
+              </div>
+            )}
           </div>
         </div>
         <div className="tenant-content flex">
