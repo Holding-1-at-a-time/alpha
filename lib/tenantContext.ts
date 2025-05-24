@@ -1,3 +1,15 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 09:07:06
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 "use client"
 
 import { createContext, useContext, type ReactNode } from "react"
@@ -25,19 +37,15 @@ export function TenantProvider({
   children: ReactNode
   tenantId: string
 }) {
-  // In a real app, you would fetch tenant metadata from your database
-  // For now, we'll create a simple tenant object
-  const tenant: TenantMeta = {
+  // Fetch tenant metadata from your database
+  const tenant = getTenantConfig(tenantId) || {
     id: tenantId,
     name: tenantId.charAt(0).toUpperCase() + tenantId.slice(1),
     primaryColor: "#3b82f6", // Default to blue
     features: ["dashboard", "projects", "team"],
   }
-
   logger.info(`TenantProvider initialized with tenant: ${tenantId}`)
-
-  return <TenantContext.Provider value={{ tenant }}>{children}</TenantContext.Provider>
-}
+const TenantContext = createContext<TenantContextType | undefined>(undefined)}
 
 export function useTenant() {
   const context = useContext(TenantContext)
