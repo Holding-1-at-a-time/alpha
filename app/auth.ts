@@ -4,6 +4,7 @@ import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import { ConvexHttpClient } from "convex/browser"
 import { logger } from "@/lib/logger"
+import { api } from "@/convex/_generated/api"
 
 // Validate required environment variables
 if (!process.env.NEXTAUTH_SECRET) {
@@ -33,45 +34,39 @@ providers.push(
       }
 
       try {
-        // ⚠️ WARNING: DEMO IMPLEMENTATION - DO NOT USE IN PRODUCTION ⚠️
-        // This is a placeholder implementation that accepts any credentials.
-        // In production, you MUST implement proper credential verification:
-        //
-        // Example production implementation:
-        // const user = await convexClient?.query(api.auth.verifyCredentials, {
-        //   email: credentials.email,
-        //   password: hashPassword(credentials.password), // Hash the password
-        //   tenantId: credentials.tenantId,
-        // })
-        //
-        // if (!user) {
-        //   return null
-        // }
-        //
-        // return {
-        //   id: user.id,
-        //   name: user.name,
-        //   email: user.email,
-        //   role: user.role,
-        //   tenantId: user.tenantId,
-        // }
-
-        if (process.env.NODE_ENV === "production") {
-          logger.error("SECURITY WARNING: Using demo authentication in production!")
-          throw new Error("Demo authentication cannot be used in production")
+        // Check if Convex client is available
+        if (!convexClient) {
+          logger.error("Convex client not initialized - check NEXT_PUBLIC_CONVEX_URL")
+          throw new Error("Authentication service unavailable")
         }
 
-        // DEMO ONLY - accepts any credentials
-        const user = {
-          id: `user_${Date.now()}`,
-          name: credentials.email.split("@")[0],
+        // Verify credentials using Convex
+        const user = await convexClient.query(api.auth.verifyCredentials, {
           email: credentials.email,
-          role: "admin",
+          password: credentials.password,
           tenantId: credentials.tenantId,
+        })
+
+        if (!user) {
+          logger.warn("Failed authentication attempt", {
+            email: credentials.email,
+            tenantId: credentials.tenantId,
+          })
+          return null
         }
 
-        logger.warn("DEMO AUTH: User authenticated with demo credentials", { email: credentials.email })
-        return user
+        logger.info("User authenticated successfully", {
+          email: credentials.email,
+          tenantId: credentials.tenantId,
+        })
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId,
+        }
       } catch (error) {
         logger.error("Auth.js authorize error", error as Error)
         return null

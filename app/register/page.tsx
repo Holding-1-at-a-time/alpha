@@ -14,7 +14,8 @@ import { AlertCircle } from "lucide-react"
 import { AuthButtons } from "@/components/AuthButtons"
 import { validateEmail } from "@/lib/auth"
 import { signIn } from "@/app/auth"
-import { registerUser } from "@/lib/auth"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
 
 export default function RegisterPage({
   searchParams,
@@ -31,6 +32,9 @@ export default function RegisterPage({
 
   const tenantId = searchParams.tenant || "demo"
   const invitationToken = searchParams.invitation
+
+  // Use Convex mutation directly
+  const registerUserMutation = useMutation(api.auth.registerUser)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,12 +64,13 @@ export default function RegisterPage({
     setIsLoading(true)
 
     try {
-      // Register user in Convex
-      await registerUser({
+      // Register user in Convex with password
+      await registerUserMutation({
         email,
         name,
         tenantId,
         authProviderId: `credentials|${email}`,
+        password, // Password will be hashed in the Convex function
         role: "user",
       })
 

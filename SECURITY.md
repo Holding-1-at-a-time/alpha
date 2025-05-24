@@ -103,7 +103,7 @@ If you discover a security vulnerability, please email security@example.com inst
 
 Finally, let's update the README to include security warnings:
 
-```typescriptreact file="README.md"
+\`\`\`typescriptreact file="README.md"
 [v0-no-op-code-block-prefix]# Project Alpha - Multi-Tenant Platform
 
 This project establishes the multi-tenant foundation for the entire platform. It implements subdomain-based routing, tenant resolution middleware, and base layouts. This scaffolding guarantees that all subsequent features inherit correct tenant isolation and shared styling.
