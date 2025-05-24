@@ -1,7 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 import { getTenantFromRequest } from "@/lib/tenantContext"
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Extract tenant from request (subdomain or path)
   const tenant = getTenantFromRequest(request)
 

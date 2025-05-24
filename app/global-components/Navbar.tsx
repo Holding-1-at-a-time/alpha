@@ -3,10 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/app/providers/AuthProvider"
 
 export default function Navbar() {
   const pathname = usePathname()
   const isTenantRoute = pathname.split("/").length > 1 && pathname.split("/")[1] !== ""
+  const { isAuthenticated, user, logout } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,8 +20,7 @@ export default function Navbar() {
           <div className="flex-1 md:flex-none">
             {isTenantRoute && (
               <div className="text-sm text-muted-foreground">
-                {/* This would show the tenant name in a real app */}
-                Tenant Dashboard
+                {user?.tenantId ? `${user.tenantId} Workspace` : "Tenant Dashboard"}
               </div>
             )}
           </div>
@@ -30,9 +31,15 @@ export default function Navbar() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/pricing">Pricing</Link>
             </Button>
-            <Button size="sm" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button size="sm" variant="outline" onClick={() => logout()}>
+                Logout
+              </Button>
+            ) : (
+              <Button size="sm" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
           </div>
         </nav>
       </div>

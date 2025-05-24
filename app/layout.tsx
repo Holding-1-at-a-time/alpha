@@ -5,13 +5,14 @@ import "./globals.css"
 import Navbar from "./global-components/Navbar"
 import Footer from "./global-components/Footer"
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "./providers/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Project Alpha",
   description: "Multi-tenant platform for Project Alpha",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -22,13 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )
