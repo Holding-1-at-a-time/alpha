@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { AuthButtons } from "@/components/AuthButtons"
 import { validateEmail } from "@/lib/auth"
-import { signIn } from "next-auth/react"
+import { signIn } from "@/app/auth"
 import { registerUser } from "@/lib/auth"
 
 export default function RegisterPage({

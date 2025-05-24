@@ -4,7 +4,8 @@ import { type ReactNode, createContext, useContext, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { ConvexProvider } from "convex/react"
 import { ConvexReactClient } from "convex/react"
-import { SessionProvider, useSession, signIn, signOut } from "next-auth/react"
+import { SessionProvider, useSession } from "next-auth/react"
+import { signIn, signOut } from "@/app/auth"
 import { logger } from "@/lib/logger"
 
 // Initialize the Convex client
@@ -57,18 +58,21 @@ export function AuthProviderWrapper({ children }: { children: ReactNode }) {
   )
 }
 
-// Internal auth provider that uses NextAuth session
+// Internal auth provider that uses Auth.js session
 function AuthProviderInternal({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
 
   // Get tenant ID from URL if available
   const pathTenantId = pathname?.split("/")[1]
+
+  // We'll use the useSession hook in a client component
+  const { data: session, status } = useSession()
+
   const tenantId = session?.user?.tenantId || pathTenantId || null
 
-  // Convert NextAuth session to our User type
+  // Convert Auth.js session to our User type
   const user: User | null = session?.user
     ? {
         id: session.user.id,

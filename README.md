@@ -9,7 +9,7 @@ This project establishes the multi-tenant foundation for the entire platform. It
 - TypeScript
 - ShadCN UI
 - TailwindCSS
-- Authentication with Convex Auth
+- Authentication with Auth.js (formerly NextAuth.js)
 
 ## 🚀 Features
 
@@ -21,7 +21,7 @@ This project establishes the multi-tenant foundation for the entire platform. It
 - **Dark Mode**: Built-in theme switching support
 - **Logging System**: Structured logging with future observability support
 - **Sidebar Navigation**: Collapsible sidebar with tenant-specific navigation
-- **Authentication & Authorization**: Secure access control with Convex Auth
+- **Authentication & Authorization**: Secure access control with Auth.js
 - **Protected Routes**: HOC for route protection with role-based access control
 - **User Management**: Invite and manage team members with different roles
 - **Profile Management**: User profile settings and password management
@@ -35,7 +35,7 @@ The platform includes a comprehensive authentication and authorization system:
 - **Tenant Isolation**: Users can only access their assigned tenants
 - **Protected Routes**: Higher-order component for route protection
 - **Auth Context**: Global auth state management with React Context
-- **Convex Integration**: Secure backend access with Convex Auth
+- **Convex Integration**: Secure backend access with Auth.js
 - **User Invitations**: Invite team members to join your tenant
 - **Session Management**: Secure session handling with automatic expiration
 - **Profile Management**: User profile settings and password management
@@ -43,8 +43,8 @@ The platform includes a comprehensive authentication and authorization system:
 ### Authentication Flow
 
 1. User signs in via the login form or OAuth provider
-2. Auth provider validates credentials and returns a token
-3. Token is stored in localStorage and used for API requests
+2. Auth.js validates credentials and returns a token
+3. Token is stored securely and used for API requests
 4. Convex client is initialized with the auth token
 5. Protected routes check for valid authentication before rendering
 6. API calls include tenant ID to ensure data isolation
@@ -105,6 +105,13 @@ Update the `.env.local` file with your configuration:
 \`\`\`
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_CONVEX_URL=your-convex-url
+AUTH_SECRET=your-auth-secret
+\`\`\`
+
+Generate a secure AUTH_SECRET:
+
+\`\`\`bash
+npx auth secret
 \`\`\`
 
 Run the development server:
@@ -128,11 +135,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
    npx convex dev
    \`\`\`
 4. Add your Convex URL to your environment variables
-5. (Optional) Set up an OAuth provider like Auth0:
-   - Create an Auth0 account
-   - Set up a new application
+5. (Optional) Set up OAuth providers:
+   - Create accounts with Google and GitHub
+   - Set up OAuth applications
    - Configure the callback URLs
-   - Add Auth0 credentials to your environment variables
+   - Add OAuth credentials to your environment variables
 
 ## 🔧 Configuration
 
@@ -157,7 +164,7 @@ const mockTenants: Record<string, TenantConfig> = {
 
 You can customize the authentication system by:
 
-1. Modifying the `AuthProvider` component
+1. Modifying the `auth.ts` configuration
 2. Updating the Convex auth functions
 3. Customizing the login and registration forms
 4. Adding additional OAuth providers
@@ -185,8 +192,7 @@ The application can be deployed to any platform that supports Next.js:
 |----------|-------------|----------|
 | `NEXT_PUBLIC_APP_URL` | Base URL of your application | Yes |
 | `NEXT_PUBLIC_CONVEX_URL` | Convex API URL | Yes |
-| `NEXTAUTH_SECRET` | Secret key for NextAuth.js | Yes |
-| `NEXTAUTH_URL` | URL for NextAuth.js callbacks | Yes |
+| `AUTH_SECRET` | Secret key for Auth.js | Yes |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | For Google Auth |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | For Google Auth |
 | `GITHUB_CLIENT_ID` | GitHub OAuth Client ID | For GitHub Auth |
@@ -225,6 +231,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - [Next.js](https://nextjs.org/) - The React framework
 - [Convex](https://convex.dev/) - Backend platform
+- [Auth.js](https://authjs.dev/) - Authentication for the Web
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Lucide Icons](https://lucide.dev/) - Icon library

@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { auth } from "@/app/auth"
 import { ConvexHttpClient } from "convex/browser"
 import { api } from "@/convex/_generated/api"
 import { logger } from "@/lib/logger"
@@ -15,14 +14,9 @@ export function validateEmail(email: string): boolean {
   return re.test(email)
 }
 
-// Get server session
-export async function getSession() {
-  return await getServerSession(authOptions)
-}
-
 // Server-side auth check
-export async function requireAuth(context: any) {
-  const session = await getSession()
+export async function requireAuth() {
+  const session = await auth()
 
   if (!session) {
     return {
