@@ -20,7 +20,7 @@ export default function TenantLayout({ children, tenantId }: TenantLayoutProps) 
       authenticated: isAuthenticated,
       userId: user?.id,
     })
-  }, [tenantId, isAuthenticated, user])
+  }, [tenantId, isAuthenticated, user?.id])
 
   return (
     <TenantProvider tenantId={tenantId}>
