@@ -64,13 +64,14 @@ providers.push(
         }
 
         // DEMO ONLY - accepts any credentials
-        const user = {
-          id: `user_${Date.now()}`,
-          name: credentials.email.split("@")[0],
-          email: credentials.email,
-          role: "admin",
-          tenantId: credentials.tenantId,
-        }
++        const user = {
++          id: `user_${Date.now()}`,
++          name: credentials.email.split("@")[0],
++          email: credentials.email,
++          // Use a lower-privilege role by default, allow override if provided in credentials
++          role: credentials.role || "user",
++          tenantId: credentials.tenantId,
++        }
 
         logger.warn("DEMO AUTH: User authenticated with demo credentials", { email: credentials.email })
         return user
