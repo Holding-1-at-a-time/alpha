@@ -37,7 +37,10 @@ export function TenantProvider({
 
   logger.info(`TenantProvider initialized with tenant: ${tenantId}`)
 
-  return <TenantContext.Provider value={{ tenant }}>{children}</TenantContext.Provider>
+  // Create the context value object
+  const contextValue: TenantContextType = { tenant }
+
+  return <TenantContext.Provider value={contextValue}>{children}</TenantContext.Provider>
 }
 
 export function useTenant() {
