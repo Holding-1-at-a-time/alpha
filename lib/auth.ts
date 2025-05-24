@@ -48,6 +48,28 @@ export async function requireAuth() {
   }
 }
 
+// Validate session token
+export async function validateSession(token: string): Promise<{
+  valid: boolean
+  userId?: string
+  tenantId?: string
+  user?: any
+}> {
+  try {
+    if (!convexClient) {
+      logger.error("Convex client is not initialized")
+      return { valid: false }
+    }
+
+    // Call Convex query to validate session
+    const result = await convexClient.query(api.auth.validateSession, { token })
+    return result
+  } catch (error) {
+    logger.error("Failed to validate session", error as Error)
+    return { valid: false }
+  }
+}
+
 // Register a new user in Convex
 export async function registerUser(userData: {
   email: string
@@ -64,8 +86,12 @@ export async function registerUser(userData: {
     }
 
     // Call Convex mutation to create user
+<<<<<<< HEAD
     return await convexClient.mutation(api.functions.auth.registerUser, userData);
 
+=======
+    return await convexClient.mutation(api.auth.registerUser, userData)
+>>>>>>> c80eb3bc71a384b3ed8ca3fda961e70d89a7228b
   } catch (error) {
     logger.error("Failed to register user", error as Error)
     throw error
@@ -82,7 +108,11 @@ export async function getUserProfile(userId: Id<"users">) {
     }
 
     // Call Convex query to get user profile
+<<<<<<< HEAD
     return await convexClient.query(api.functions.auth.getUserProfile, { userId });
+=======
+    return await convexClient.query(api.auth.getUserProfile, { userId })
+>>>>>>> c80eb3bc71a384b3ed8ca3fda961e70d89a7228b
   } catch (error) {
     logger.error("Failed to get user profile", error as Error)
     throw error
