@@ -23,15 +23,14 @@ export default function ProtectedRoute({ children, allowedRoles, redirectTo = "/
       return
     }
 
-    if (!isLoading && isAuthenticated && allowedRoles && user) {
-      if (!allowedRoles.includes(user.role)) {
-        logger.warn(`User ${user.id} does not have required role, redirecting`, {
-          userRole: user.role,
-          requiredRoles: allowedRoles,
-        })
-        router.push(`/${tenantId || "demo"}/dashboard`)
-      }
+    if (!isLoading && isAuthenticated && allowedRoles && user && !allowedRoles.includes(user.role)) {
+          logger.warn(`User ${user.id} does not have required role, redirecting`, {
+            userRole: user.role,
+            requiredRoles: allowedRoles,
+          })
+          router.push(`/${tenantId || "demo"}/dashboard`)
     }
+
   }, [isLoading, isAuthenticated, user, allowedRoles, router, redirectTo, tenantId])
 
   if (isLoading) {
