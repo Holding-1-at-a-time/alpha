@@ -1,4 +1,110 @@
-# Project Alpha - Multi-Tenant Platform
+# Security Guidelines for Project Alpha
+
+## ⚠️ IMPORTANT: Demo Implementation Warning
+
+This project includes demo authentication code that **MUST NOT** be used in production. The demo implementation:
+
+- Accepts any credentials without verification
+- Does not hash passwords
+- Does not implement rate limiting
+- Does not have proper session management
+
+## Production Security Checklist
+
+Before deploying to production, ensure you have:
+
+### 1. Authentication
+- [ ] Replace demo authentication with real credential verification
+- [ ] Implement password hashing using bcrypt or argon2
+- [ ] Add rate limiting to prevent brute force attacks
+- [ ] Implement proper session management and expiration
+- [ ] Add multi-factor authentication (MFA) support
+
+### 2. Environment Variables
+- [ ] Set a strong `NEXTAUTH_SECRET` (minimum 32 characters)
+- [ ] Never commit secrets to version control
+- [ ] Use different secrets for each environment
+- [ ] Rotate secrets regularly
+
+### 3. OAuth Providers
+- [ ] Configure OAuth redirect URLs correctly
+- [ ] Validate OAuth provider environment variables
+- [ ] Implement proper error handling for OAuth failures
+
+### 4. Data Protection
+- [ ] Implement proper input validation
+- [ ] Sanitize user inputs to prevent XSS
+- [ ] Use parameterized queries to prevent SQL injection
+- [ ] Implement CSRF protection
+
+### 5. Access Control
+- [ ] Implement role-based access control (RBAC)
+- [ ] Validate user permissions on both client and server
+- [ ] Implement tenant isolation properly
+- [ ] Log all authentication and authorization events
+
+### 6. Security Headers
+- [ ] Configure Content Security Policy (CSP)
+- [ ] Set X-Frame-Options to prevent clickjacking
+- [ ] Enable HSTS for HTTPS enforcement
+- [ ] Set secure cookie flags
+
+### 7. Monitoring
+- [ ] Set up authentication event logging
+- [ ] Monitor for suspicious login patterns
+- [ ] Implement alerting for security events
+- [ ] Regular security audits
+
+## Implementing Production Authentication
+
+Replace the demo authentication in `app/auth.ts` with:
+
+\`\`\`typescript
+async authorize(credentials) {
+  if (!credentials?.email || !credentials?.password || !credentials?.tenantId) {
+    return null
+  }
+
+  try {
+    // Verify credentials against your database
+    const user = await convexClient?.query(api.auth.verifyCredentials, {
+      email: credentials.email,
+      password: credentials.password, // This should be hashed in the Convex function
+      tenantId: credentials.tenantId,
+    })
+
+    if (!user) {
+      // Log failed authentication attempt
+      logger.warn("Failed authentication attempt", { 
+        email: credentials.email, 
+        tenantId: credentials.tenantId 
+      })
+      return null
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      tenantId: user.tenantId,
+    }
+  } catch (error) {
+    logger.error("Authentication error", error as Error)
+    return null
+  }
+}
+\`\`\`
+
+## Reporting Security Issues
+
+If you discover a security vulnerability, please email security@example.com instead of using the issue tracker.
+\`\`\`
+
+Finally, let's update the README to include security warnings:
+
+```typescriptreact file="README.md"
+[v0-no-op-code-block-prefix]# Project Alpha - Multi-Tenant Platform
 
 This project establishes the multi-tenant foundation for the entire platform. It implements subdomain-based routing, tenant resolution middleware, and base layouts. This scaffolding guarantees that all subsequent features inherit correct tenant isolation and shared styling.
 

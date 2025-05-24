@@ -2,6 +2,24 @@ import { mutation, query } from "./_generated/server"
 import { v } from "convex/values"
 import { ConvexError } from "convex/values"
 
+// Safe UUID generation with fallback
+function generateSecureToken(): string {
+  try {
+    // Try to use crypto.randomUUID if available
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID()
+    }
+  } catch (error) {
+    // Fall through to alternative method
+  }
+
+  // Fallback to timestamp + random for environments without crypto.randomUUID
+  const timestamp = Date.now().toString(36)
+  const randomPart = Math.random().toString(36).substring(2, 15)
+  const randomPart2 = Math.random().toString(36).substring(2, 15)
+  return `${timestamp}-${randomPart}-${randomPart2}`
+}
+
 // Register a new user
 export const registerUser = mutation({
   args: {
@@ -159,8 +177,8 @@ export const createSession = mutation({
     const now = new Date()
     const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
-    // Generate a random token
-    const token = crypto.randomUUID()
+    // Generate a secure token
+    const token = generateSecureToken()
 
     // Create session
     const sessionId = await ctx.db.insert("sessions", {
@@ -265,8 +283,8 @@ export const inviteUser = mutation({
     const now = new Date()
     const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
-    // Generate a random token
-    const token = crypto.randomUUID()
+    // Generate a secure token
+    const token = generateSecureToken()
 
     // Create invitation
     const invitationId = await ctx.db.insert("invitations", {
@@ -344,5 +362,49 @@ export const acceptInvitation = mutation({
     })
 
     return { userId }
+  },
+})
+
+// TODO: Implement production-ready authentication
+// This function should verify credentials against hashed passwords in the database
+export const verifyCredentials = query({
+  args: {
+    email: v.string(),
+    password: v.string(),
+    tenantId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // ⚠️ IMPORTANT: This is a placeholder implementation
+    // In production, you MUST:
+    // 1. Hash the password using bcrypt or similar
+    // 2. Compare against stored hashed password
+    // 3. Implement rate limiting to prevent brute force attacks
+    // 4. Log authentication attempts for security monitoring
+
+    throw new ConvexError("Production credential verification not implemented")
+
+    // Example production implementation:
+    // const user = await ctx.db
+    //   .query("users")
+    //   .withIndex("by_email", (q) => q.eq("email", args.email))
+    //   .filter((q) => q.eq(q.field("tenantId"), args.tenantId))
+    //   .first()
+    //
+    // if (!user) {
+    //   return null
+    // }
+    //
+    // const isValidPassword = await bcrypt.compare(args.password, user.hashedPassword)
+    // if (!isValidPassword) {
+    //   return null
+    // }
+    //
+    // return {
+    //   id: user._id,
+    //   name: user.name,
+    //   email: user.email,
+    //   role: user.role,
+    //   tenantId: user.tenantId,
+    // }
   },
 })
