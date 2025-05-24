@@ -68,8 +68,8 @@ export async function getUserProfile(userId: string) {
     }
 
     // Call Convex query to get user profile
-    const result = await convexClient.query(api.auth.getUserProfile, { userId })
-    return result
+    return await convexClient.query(api.auth.getUserProfile, { userId });
+
   } catch (error) {
     logger.error("Failed to get user profile", error as Error)
     throw error
