@@ -27,7 +27,9 @@ test.describe("Authentication", () => {
     // Fill in valid credentials
     await page.fill('input[type="email"]', "test@example.com")
     await page.fill('input[type="password"]', "password123")
-    await page.click('button:has-text("Sign In")')
+
+    // Click and wait for navigation
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle" }), page.click('button:has-text("Sign In")')])
 
     // Check that we're redirected to the dashboard
     await expect(page).toHaveURL(/\/demo\/dashboard/)
@@ -41,11 +43,11 @@ test.describe("Authentication", () => {
     await page.goto("/login?tenant=demo")
     await page.fill('input[type="email"]', "test@example.com")
     await page.fill('input[type="password"]', "password123")
-    await page.click('button:has-text("Sign In")')
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle" }), page.click('button:has-text("Sign In")')])
     await expect(page).toHaveURL(/\/demo\/dashboard/)
 
     // Click logout button
-    await page.click('button:has-text("Logout")')
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle" }), page.click('button:has-text("Logout")')])
 
     // Check that we're redirected to the home page
     await expect(page).toHaveURL("/")
@@ -60,7 +62,11 @@ test.describe("Authentication", () => {
     await page.fill('input[type="email"]', "newuser@example.com")
     await page.fill('input[id="password"]', "password123")
     await page.fill('input[id="confirm-password"]', "password123")
-    await page.click('button:has-text("Create account")')
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: "networkidle" }),
+      page.click('button:has-text("Create account")'),
+    ])
 
     // Check that we're redirected to the dashboard
     await expect(page).toHaveURL(/\/demo\/dashboard/)
@@ -71,7 +77,7 @@ test.describe("Authentication", () => {
     await page.goto("/login?tenant=demo")
     await page.fill('input[type="email"]', "user@example.com")
     await page.fill('input[type="password"]', "password123")
-    await page.click('button:has-text("Sign In")')
+    await Promise.all([page.waitForNavigation({ waitUntil: "networkidle" }), page.click('button:has-text("Sign In")')])
 
     // Try to access an admin-only page
     await page.goto("/demo/settings")

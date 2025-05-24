@@ -50,6 +50,10 @@ export default function ProfilePage() {
 
     try {
       // Validate passwords
+      if (!currentPassword) {
+        throw new Error("Current password is required")
+      }
+
       if (newPassword !== confirmPassword) {
         throw new Error("New passwords don't match")
       }

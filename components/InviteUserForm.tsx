@@ -45,6 +45,12 @@ export function InviteUserForm({ onInviteSuccess }: InviteUserFormProps) {
       return
     }
 
+    // Validate role
+    if (!role) {
+      setError("Please select a role")
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -113,7 +119,7 @@ export function InviteUserForm({ onInviteSuccess }: InviteUserFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select value={role} onValueChange={setRole}>
+              <Select value={role} onValueChange={setRole} required>
                 <SelectTrigger id="role">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>

@@ -1,68 +1,77 @@
-/**
- * Validates an email address format
- * @param email The email address to validate
- * @returns True if the email is valid, false otherwise
- */
+import { auth } from "@/app/auth"
+import { ConvexHttpClient } from "convex/browser"
+import { api } from "@/convex/_generated/api"
+import { logger } from "@/lib/logger"
+
+// Initialize Convex client
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+const convexClient =
+  typeof convexUrl === "string" && convexUrl.startsWith("https://") ? new ConvexHttpClient(convexUrl) : null
+
+// Email validation
 export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
 }
 
-/**
- * Registers a new user with the given details
- * @param userData The user data to register
- * @returns A promise that resolves when the user is registered
- */
+// Server-side auth check
+export async function requireAuth() {
+  const session = await auth()
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      session,
+    },
+  }
+}
+
+// Register a new user in Convex
 export async function registerUser(userData: {
   email: string
   name: string
   tenantId: string
   authProviderId: string
-  password?: string
   role?: string
-}): Promise<{ userId: string }> {
-  // This is a client-side wrapper around the Convex mutation
-  // In a real implementation, you would use the useMutation hook directly
-  // This function is provided for backward compatibility
+}) {
+  try {
+    if (!convexClient) {
+      throw new Error(
+        "Convex client is not initialized. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.",
+      )
+    }
 
-  // Import the mutation dynamically to avoid SSR issues
-  const { useMutation } = await import("convex/react")
-  const { api } = await import("@/convex/_generated/api")
-
-  // Create a temporary function to execute the mutation
-  const registerUserMutation = useMutation(api.auth.registerUser)
-
-  // Execute the mutation
-  return registerUserMutation(userData)
+    // Call Convex mutation to create user
+    const result = await convexClient.mutation(api.auth.registerUser, userData)
+    return result
+  } catch (error) {
+    logger.error("Failed to register user", error as Error)
+    throw error
+  }
 }
 
-/**
- * Validates a password strength
- * @param password The password to validate
- * @returns An object with validation results
- */
-export function validatePasswordStrength(password: string): {
-  isValid: boolean
-  message?: string
-} {
-  if (password.length < 8) {
-    return { isValid: false, message: "Password must be at least 8 characters" }
-  }
+// Get user profile from Convex
+export async function getUserProfile(userId: string) {
+  try {
+    if (!convexClient) {
+      throw new Error(
+        "Convex client is not initialized. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.",
+      )
+    }
 
-  // Check for at least one number
-  if (!/\d/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one number" }
+    // Call Convex query to get user profile
+    const result = await convexClient.query(api.auth.getUserProfile, { userId })
+    return result
+  } catch (error) {
+    logger.error("Failed to get user profile", error as Error)
+    throw error
   }
-
-  // Check for at least one uppercase letter
-  if (!/[A-Z]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one uppercase letter" }
-  }
-
-  // Check for at least one special character
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return { isValid: false, message: "Password must contain at least one special character" }
-  }
-
-  return { isValid: true }
 }
