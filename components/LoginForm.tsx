@@ -17,11 +17,12 @@ interface LoginFormProps {
   tenantId?: string
 }
 
-export function LoginForm({ tenantId }: LoginFormProps) {
-  const { login, error, isLoading } = useAuth()
+export function LoginForm({ tenantId = "demo" }: LoginFormProps) {
+  const { login, error: authError, isLoading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +40,13 @@ export function LoginForm({ tenantId }: LoginFormProps) {
     }
 
     setValidationError(null)
-    await login(email, password)
+    setError(null)
+
+    try {
+      await login(email, password, tenantId)
+    } catch (err) {
+      setError((err as Error).message || "Failed to login")
+    }
   }
 
   return (
@@ -49,10 +56,10 @@ export function LoginForm({ tenantId }: LoginFormProps) {
         <CardDescription>Enter your credentials to access your account</CardDescription>
       </CardHeader>
       <CardContent>
-        {(error || validationError) && (
+        {(error || validationError || authError) && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{validationError || error}</AlertDescription>
+            <AlertDescription>{validationError || error || authError}</AlertDescription>
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">

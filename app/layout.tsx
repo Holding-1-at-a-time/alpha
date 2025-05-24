@@ -5,7 +5,6 @@ import "./globals.css"
 import Navbar from "./global-components/Navbar"
 import Footer from "./global-components/Footer"
 import { ThemeProvider } from "@/components/theme-provider"
-// Import the AuthProvider
 import { AuthProvider } from "./providers/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 }
 
-// Wrap the ThemeProvider with AuthProvider
 export default function RootLayout({
   children,
 }: {

@@ -185,9 +185,12 @@ The application can be deployed to any platform that supports Next.js:
 |----------|-------------|----------|
 | `NEXT_PUBLIC_APP_URL` | Base URL of your application | Yes |
 | `NEXT_PUBLIC_CONVEX_URL` | Convex API URL | Yes |
-| `AUTH0_CLIENT_ID` | Auth0 Client ID | For Auth0 |
-| `AUTH0_CLIENT_SECRET` | Auth0 Client Secret | For Auth0 |
-| `AUTH0_ISSUER` | Auth0 Issuer URL | For Auth0 |
+| `NEXTAUTH_SECRET` | Secret key for NextAuth.js | Yes |
+| `NEXTAUTH_URL` | URL for NextAuth.js callbacks | Yes |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | For Google Auth |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | For Google Auth |
+| `GITHUB_CLIENT_ID` | GitHub OAuth Client ID | For GitHub Auth |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret | For GitHub Auth |
 
 ## 🧪 Testing
 

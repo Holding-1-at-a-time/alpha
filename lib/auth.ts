@@ -1,8 +1,8 @@
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { ConvexHttpClient } from "convex/browser"
 import { api } from "@/convex/_generated/api"
 import { logger } from "@/lib/logger"
-
-// Update the Convex client initialization with proper validation
 
 // Initialize Convex client
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
@@ -15,41 +15,16 @@ export function validateEmail(email: string): boolean {
   return re.test(email)
 }
 
-// Initialize auth with the identity provider
-export async function initializeAuth() {
-  try {
-    // This would be replaced with actual auth provider initialization
-    logger.info("Auth initialized")
-    return true
-  } catch (error) {
-    logger.error("Failed to initialize auth", error as Error)
-    return false
-  }
-}
-
-// Get auth token for Convex
-export async function getConvexAuthToken(): Promise<string | null> {
-  try {
-    // In a real implementation, this would get the token from your auth provider
-    // For now, we'll return a mock token from localStorage
-    return localStorage.getItem("auth_token")
-  } catch (error) {
-    logger.error("Failed to get auth token", error as Error)
-    return null
-  }
+// Get server session
+export async function getSession() {
+  return await getServerSession(authOptions)
 }
 
 // Server-side auth check
 export async function requireAuth(context: any) {
-  // This would be used in getServerSideProps or similar server functions
-  // to verify the user is authenticated before rendering protected pages
+  const session = await getSession()
 
-  const { req, res } = context
-
-  // Check for auth cookie/header
-  const token = req.cookies.auth_token || req.headers.authorization?.split(" ")[1]
-
-  if (!token) {
+  if (!session) {
     return {
       redirect: {
         destination: "/login",
@@ -58,26 +33,12 @@ export async function requireAuth(context: any) {
     }
   }
 
-  try {
-    // Verify token with your auth provider
-    // For now, we'll assume it's valid
-    return {
-      props: {
-        // Any props you want to pass to the page
-      },
-    }
-  } catch (error) {
-    logger.error("Auth verification failed", error as Error)
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    }
+  return {
+    props: {
+      session,
+    },
   }
 }
-
-// Update the registerUser and getUserProfile functions to handle the case when convexClient is null
 
 // Register a new user in Convex
 export async function registerUser(userData: {

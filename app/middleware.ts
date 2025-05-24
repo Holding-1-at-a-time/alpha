@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   // If no tenant or www, redirect to landing page
   if (!tenant || tenant === "www") {
     // Only redirect if not already on the landing page
-    if (request.nextUrl.pathname !== "/") {
+    if (request.nextUrl.pathname !== "/" && !request.nextUrl.pathname.startsWith("/api/auth")) {
       return NextResponse.redirect(new URL("/", request.url))
     }
     return NextResponse.next()

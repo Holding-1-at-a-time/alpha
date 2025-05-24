@@ -13,6 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { AuthButtons } from "@/components/AuthButtons"
 import { validateEmail } from "@/lib/auth"
+import { signIn } from "next-auth/react"
+import { registerUser } from "@/lib/auth"
 
 export default function RegisterPage({
   searchParams,
@@ -58,12 +60,29 @@ export default function RegisterPage({
     setIsLoading(true)
 
     try {
-      // In a real implementation, this would call your API to register the user
-      // For now, we'll simulate a successful registration
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Register user in Convex
+      await registerUser({
+        email,
+        name,
+        tenantId,
+        authProviderId: `credentials|${email}`,
+        role: "user",
+      })
 
-      // Redirect to login page
-      router.push(`/login?tenant=${tenantId}`)
+      // Sign in with credentials
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+        tenantId,
+      })
+
+      if (result?.error) {
+        throw new Error(result.error)
+      }
+
+      // Redirect to dashboard
+      router.push(`/${tenantId}/dashboard`)
     } catch (err) {
       setError((err as Error).message || "Failed to register")
     } finally {

@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children, allowedRoles, redirectTo = "/
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       logger.info("User not authenticated, redirecting to login")
-      router.push(redirectTo)
+      router.push(`${redirectTo}?tenant=${tenantId || "demo"}`)
       return
     }
 

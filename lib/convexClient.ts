@@ -1,9 +1,8 @@
 import { ConvexHttpClient } from "convex/browser"
-import { getConvexAuthToken } from "@/lib/auth"
+import { getSession } from "@/lib/auth"
 import { logger } from "@/lib/logger"
 
-// Update the Convex client initialization with proper validation
-
+// Initialize Convex client with auth
 export async function getConvexClient() {
   try {
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
@@ -13,28 +12,23 @@ export async function getConvexClient() {
       throw new Error("Invalid Convex URL. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.")
     }
 
-    const token = await getConvexAuthToken()
     const client = new ConvexHttpClient(convexUrl)
 
-    // Add auth token to headers if available
-    if (token) {
-      client.setAuth(token)
+    // In browser context, get session from NextAuth
+    if (typeof window !== "undefined") {
+      // This would be handled by the ConvexReactClient in the AuthProvider
+      // We don't need to do anything here for client-side
+      return client
     }
 
-    // Get tenant ID from cookies or localStorage
-    const tenantId =
-      typeof window !== "undefined"
-        ? localStorage.getItem("tenantId") ||
-          document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("tenantId="))
-            ?.split("=")[1]
-        : null
+    // In server context, get session from NextAuth
+    const session = await getSession()
 
-    // Add tenant ID to headers if available
-    if (tenantId) {
+    if (session?.user) {
+      // Add tenant ID to headers
       client.setHeaders({
-        "x-tenant-id": tenantId,
+        "x-tenant-id": session.user.tenantId,
+        "x-user-id": session.user.id,
       })
     }
 
