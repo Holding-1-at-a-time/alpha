@@ -6,8 +6,13 @@ import { ConvexProvider } from "convex/react"
 import { ConvexReactClient } from "convex/react"
 import { logger } from "@/lib/logger"
 
+// Update the ConvexReactClient initialization with proper validation
+// Replace the current initialization at the top of the file:
+
 // Initialize the Convex client
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL || "")
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+const convex =
+  typeof convexUrl === "string" && convexUrl.startsWith("https://") ? new ConvexReactClient(convexUrl) : null
 
 // Auth context type definition
 type AuthContextType = {
@@ -192,9 +197,20 @@ export function AuthProvider({ children, initialTenantId }: AuthProviderProps) {
     error,
   }
 
+  // Then update the ConvexProvider usage in the return statement:
+
   return (
     <AuthContext.Provider value={value}>
-      <ConvexProvider client={convex}>{children}</ConvexProvider>
+      {convex ? (
+        <ConvexProvider client={convex}>{children}</ConvexProvider>
+      ) : (
+        <div className="container flex min-h-screen flex-col items-center justify-center p-4 text-center">
+          <h1 className="text-2xl font-bold">Configuration Error</h1>
+          <p className="mt-4 text-muted-foreground">
+            The Convex URL is not properly configured. Please check your environment variables.
+          </p>
+        </div>
+      )}
     </AuthContext.Provider>
   )
 }

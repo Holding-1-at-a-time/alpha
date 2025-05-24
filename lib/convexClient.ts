@@ -2,11 +2,19 @@ import { ConvexHttpClient } from "convex/browser"
 import { getConvexAuthToken } from "@/lib/auth"
 import { logger } from "@/lib/logger"
 
-// Initialize Convex client with auth
+// Update the Convex client initialization with proper validation
+
 export async function getConvexClient() {
   try {
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+
+    // Validate that we have a proper URL
+    if (!convexUrl || typeof convexUrl !== "string" || !convexUrl.startsWith("https://")) {
+      throw new Error("Invalid Convex URL. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.")
+    }
+
     const token = await getConvexAuthToken()
-    const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "")
+    const client = new ConvexHttpClient(convexUrl)
 
     // Add auth token to headers if available
     if (token) {
@@ -15,11 +23,13 @@ export async function getConvexClient() {
 
     // Get tenant ID from cookies or localStorage
     const tenantId =
-      localStorage.getItem("tenantId") ||
-      document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("tenantId="))
-        ?.split("=")[1]
+      typeof window !== "undefined"
+        ? localStorage.getItem("tenantId") ||
+          document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("tenantId="))
+            ?.split("=")[1]
+        : null
 
     // Add tenant ID to headers if available
     if (tenantId) {

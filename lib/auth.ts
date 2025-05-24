@@ -2,8 +2,12 @@ import { ConvexHttpClient } from "convex/browser"
 import { api } from "@/convex/_generated/api"
 import { logger } from "@/lib/logger"
 
+// Update the Convex client initialization with proper validation
+
 // Initialize Convex client
-const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "")
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+const convexClient =
+  typeof convexUrl === "string" && convexUrl.startsWith("https://") ? new ConvexHttpClient(convexUrl) : null
 
 // Email validation
 export function validateEmail(email: string): boolean {
@@ -73,6 +77,8 @@ export async function requireAuth(context: any) {
   }
 }
 
+// Update the registerUser and getUserProfile functions to handle the case when convexClient is null
+
 // Register a new user in Convex
 export async function registerUser(userData: {
   email: string
@@ -82,6 +88,12 @@ export async function registerUser(userData: {
   role?: string
 }) {
   try {
+    if (!convexClient) {
+      throw new Error(
+        "Convex client is not initialized. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.",
+      )
+    }
+
     // Call Convex mutation to create user
     const result = await convexClient.mutation(api.auth.registerUser, userData)
     return result
@@ -94,6 +106,12 @@ export async function registerUser(userData: {
 // Get user profile from Convex
 export async function getUserProfile(userId: string) {
   try {
+    if (!convexClient) {
+      throw new Error(
+        "Convex client is not initialized. Please check your NEXT_PUBLIC_CONVEX_URL environment variable.",
+      )
+    }
+
     // Call Convex query to get user profile
     const result = await convexClient.query(api.auth.getUserProfile, { userId })
     return result
