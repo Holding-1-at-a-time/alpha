@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
     return [
-      // Handle subdomain routing
+      // Handle subdomain routing - fixing the invalid rewrite configuration
       {
         source: "/:path*",
         has: [
