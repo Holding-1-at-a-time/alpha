@@ -1,3 +1,15 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 16:17:47
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GitHub from "next-auth/providers/github"
@@ -68,8 +80,8 @@ providers.push(
           id: `user_${Date.now()}`,
           name: credentials.email.split("@")[0],
           email: credentials.email,
-          // Use a lower-privilege role by default, allow override if provided in credentials
-          role: credentials.role || "user",
+          // Use a lower-privilege role by default
+          role: "user",
           tenantId: credentials.tenantId,
         }
 
