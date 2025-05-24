@@ -19,9 +19,11 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/app/providers/AuthProvider"
 
 export function TenantSidebar() {
   const tenant = useTenant()
+  const { user } = useAuth()
   const pathname = usePathname()
   const tenantPath = `/${tenant.id}`
 
@@ -87,11 +89,16 @@ export function TenantSidebar() {
         <div className="px-3 py-2">
           <div className="flex items-center gap-2 rounded-md bg-sidebar-accent p-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              {tenant.name?.[0] || tenant.id[0].toUpperCase()}
+              {user?.name?.[0] || tenant.name?.[0] || tenant.id[0].toUpperCase()}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium">{tenant.name}</span>
-              <span className="text-xs text-muted-foreground">Workspace</span>
+              <span className="text-sm font-medium">{user?.name || tenant.name}</span>
+              <Link
+                href={`/${tenant.id}/profile`}
+                className="text-xs text-muted-foreground hover:text-primary hover:underline"
+              >
+                View Profile
+              </Link>
             </div>
           </div>
         </div>

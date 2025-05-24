@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import TenantLayout from "@/components/TenantLayout"
 import Loading from "@/app/global-components/Loading"
 import { AuthProvider } from "@/app/providers/AuthProvider"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 export default function TenantRootLayout({
   children,
@@ -25,9 +26,11 @@ export default function TenantRootLayout({
 
   return (
     <AuthProvider initialTenantId={tenantId}>
-      <TenantLayout tenantId={tenantId}>
-        <Suspense fallback={<Loading />}>{children}</Suspense>
-      </TenantLayout>
+      <ErrorBoundary>
+        <TenantLayout tenantId={tenantId}>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
+        </TenantLayout>
+      </ErrorBoundary>
     </AuthProvider>
   )
 }

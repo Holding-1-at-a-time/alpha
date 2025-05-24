@@ -23,6 +23,8 @@ This project establishes the multi-tenant foundation for the entire platform. It
 - **Sidebar Navigation**: Collapsible sidebar with tenant-specific navigation
 - **Authentication & Authorization**: Secure access control with Convex Auth
 - **Protected Routes**: HOC for route protection with role-based access control
+- **User Management**: Invite and manage team members with different roles
+- **Profile Management**: User profile settings and password management
 
 ## 🔐 Authentication System
 
@@ -34,6 +36,9 @@ The platform includes a comprehensive authentication and authorization system:
 - **Protected Routes**: Higher-order component for route protection
 - **Auth Context**: Global auth state management with React Context
 - **Convex Integration**: Secure backend access with Convex Auth
+- **User Invitations**: Invite team members to join your tenant
+- **Session Management**: Secure session handling with automatic expiration
+- **Profile Management**: User profile settings and password management
 
 ### Authentication Flow
 
@@ -48,8 +53,175 @@ The platform includes a comprehensive authentication and authorization system:
 
 The platform supports the following roles:
 
-- **Admin**: Full access to all features
+- **Admin**: Full access to all features and user management
 - **Manager**: Access to team management and projects
 - **User**: Basic access to dashboard and projects
 
 Roles can be configured per tenant, allowing for flexible access control.
+
+### User Management
+
+Administrators can:
+
+- Invite new users to join their tenant
+- Assign roles to users
+- Remove users from their tenant
+- View user activity and last login time
+
+### Security Features
+
+- **Password Hashing**: Secure password storage with bcrypt
+- **CSRF Protection**: Protection against cross-site request forgery
+- **Session Expiration**: Automatic session expiration after inactivity
+- **Rate Limiting**: Protection against brute force attacks
+- **Error Handling**: Secure error handling to prevent information leakage
+
+## 📋 Prerequisites
+
+- Node.js 18+ 
+- npm, yarn, or pnpm
+- Git
+- Convex account
+
+## Getting Started
+
+First, install the dependencies:
+
+\`\`\`bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+\`\`\`
+
+Then, set up your environment variables:
+
+\`\`\`bash
+cp .env.example .env.local
+\`\`\`
+
+Update the `.env.local` file with your configuration:
+\`\`\`
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_CONVEX_URL=your-convex-url
+\`\`\`
+
+Run the development server:
+
+\`\`\`bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+\`\`\`
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 🛠️ Setting Up Authentication
+
+1. Create a Convex account at [convex.dev](https://convex.dev)
+2. Set up a new Convex project
+3. Deploy the Convex schema:
+   \`\`\`bash
+   npx convex dev
+   \`\`\`
+4. Add your Convex URL to your environment variables
+5. (Optional) Set up an OAuth provider like Auth0:
+   - Create an Auth0 account
+   - Set up a new application
+   - Configure the callback URLs
+   - Add Auth0 credentials to your environment variables
+
+## 🔧 Configuration
+
+### Adding New Tenants
+
+1. Update the mock data in `lib/tenant-utils.ts`:
+\`\`\`typescript
+const mockTenants: Record<string, TenantConfig> = {
+  "new-tenant": {
+    id: "new-tenant",
+    name: "New Tenant Inc",
+    subdomain: "new-tenant",
+    features: ["dashboard", "analytics", "projects"],
+    // ... other config
+  }
+}
+\`\`\`
+
+2. In production, replace mock data with database queries.
+
+### Customizing Authentication
+
+You can customize the authentication system by:
+
+1. Modifying the `AuthProvider` component
+2. Updating the Convex auth functions
+3. Customizing the login and registration forms
+4. Adding additional OAuth providers
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Configure environment variables
+4. Deploy
+
+### Other Platforms
+
+The application can be deployed to any platform that supports Next.js:
+- AWS Amplify
+- Netlify
+- Railway
+- Self-hosted with Docker
+
+## 📝 Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_APP_URL` | Base URL of your application | Yes |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex API URL | Yes |
+| `AUTH0_CLIENT_ID` | Auth0 Client ID | For Auth0 |
+| `AUTH0_CLIENT_SECRET` | Auth0 Client Secret | For Auth0 |
+| `AUTH0_ISSUER` | Auth0 Issuer URL | For Auth0 |
+
+## 🧪 Testing
+
+Run type checking:
+\`\`\`bash
+npm run type-check
+\`\`\`
+
+Run linting:
+\`\`\`bash
+npm run lint
+\`\`\`
+
+Format code:
+\`\`\`bash
+npm run format
+\`\`\`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - The React framework
+- [Convex](https://convex.dev/) - Backend platform
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [Lucide Icons](https://lucide.dev/) - Icon library
