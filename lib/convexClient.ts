@@ -1,50 +1,36 @@
-import { ConvexClient } from "convex/browser"
-import { initializeAuth } from "./auth"
-import { logger } from "./logger"
+import { ConvexHttpClient } from "convex/browser"
+import { getConvexAuthToken } from "@/lib/auth"
+import { logger } from "@/lib/logger"
 
-// Initialize Convex client with auth token
-export async function createConvexClient() {
+// Initialize Convex client with auth
+export async function getConvexClient() {
   try {
-    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
+    const token = await getConvexAuthToken()
+    const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "")
 
-    if (!convexUrl) {
-      throw new Error("NEXT_PUBLIC_CONVEX_URL is not defined")
-    }
-
-    const client = new ConvexClient(convexUrl)
-
-    // Get auth token from auth provider
-    const auth = await initializeAuth()
-    const token = await auth.getToken()
-
+    // Add auth token to headers if available
     if (token) {
       client.setAuth(token)
     }
 
+    // Get tenant ID from cookies or localStorage
+    const tenantId =
+      localStorage.getItem("tenantId") ||
+      document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("tenantId="))
+        ?.split("=")[1]
+
+    // Add tenant ID to headers if available
+    if (tenantId) {
+      client.setHeaders({
+        "x-tenant-id": tenantId,
+      })
+    }
+
     return client
   } catch (error) {
-    logger.error("Error creating Convex client", error as Error)
+    logger.error("Failed to initialize Convex client", error as Error)
     throw error
   }
-}
-
-// Create a wrapper for Convex client that adds tenant ID to all requests
-export function withTenant(client: ConvexClient, tenantId: string) {
-  // This is a simplified example - in a real implementation,
-  // you would need to intercept all requests and add the tenant ID header
-
-  // For demonstration purposes only
-  const originalFetch = client.fetch.bind(client)
-
-  client.fetch = async (url: string, options: RequestInit = {}) => {
-    const headers = new Headers(options.headers)
-    headers.set("x-tenant-id", tenantId)
-
-    return originalFetch(url, {
-      ...options,
-      headers,
-    })
-  }
-
-  return client
 }

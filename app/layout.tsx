@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
 // Import the AuthProvider
-import { AuthProvider } from "@/app/providers/AuthProvider"
+import { AuthProvider } from "./providers/AuthProvider"
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   generator: "v0.dev",
 }
 
-// Update the RootLayout function to wrap the children with AuthProvider
+// Wrap the ThemeProvider with AuthProvider
 export default function RootLayout({
   children,
 }: {
@@ -18,16 +18,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>
+      <body>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <div className="flex min-h-screen flex-col">
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

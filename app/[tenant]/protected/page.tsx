@@ -1,23 +1,38 @@
+"use client"
+
+import { useAuth } from "@/app/providers/AuthProvider"
 import ProtectedRoute from "@/components/ProtectedRoute"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-function ProtectedPage() {
-  return (
-    <div className="container py-6">
-      <h1 className="mb-6 text-2xl font-bold">Protected Page</h1>
-      <div className="rounded-lg border bg-card p-6 shadow-sm">
-        <p className="mb-4">This page is only accessible to authenticated users.</p>
-        <p className="text-muted-foreground">
-          You are seeing this content because you are logged in and have the appropriate permissions.
-        </p>
-      </div>
-    </div>
-  )
-}
+export default function ProtectedPage() {
+  const { user, logout } = useAuth()
 
-export default function ProtectedPageWrapper() {
   return (
     <ProtectedRoute>
-      <ProtectedPage />
+      <div className="container py-6">
+        <h1 className="mb-6 text-2xl font-bold">Protected Page</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle>Authentication Successful</CardTitle>
+            <CardDescription>This page is only visible to authenticated users</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium">User Information</h3>
+                <p className="text-sm text-muted-foreground">Name: {user?.name}</p>
+                <p className="text-sm text-muted-foreground">Email: {user?.email}</p>
+                <p className="text-sm text-muted-foreground">Role: {user?.role}</p>
+                <p className="text-sm text-muted-foreground">Tenant: {user?.tenantId}</p>
+              </div>
+              <Button onClick={logout} variant="outline">
+                Sign Out
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </ProtectedRoute>
   )
 }

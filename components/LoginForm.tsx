@@ -3,60 +3,58 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/app/providers/AuthProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AuthButtons } from "@/components/AuthButtons"
-import { validateEmail, validatePassword } from "@/lib/utilities/validation"
+import { validateEmail } from "@/lib/auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
-export function LoginForm() {
+interface LoginFormProps {
+  tenantId?: string
+}
+
+export function LoginForm({ tenantId }: LoginFormProps) {
+  const { login, error, isLoading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [emailError, setEmailError] = useState<string | null>(null)
-  const [passwordError, setPasswordError] = useState<string | null>(null)
-  const { login, isLoading, error } = useAuth()
-  const searchParams = useSearchParams()
-  const tenant = searchParams.get("tenant") || ""
-  const redirect = searchParams.get("redirect") || ""
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Reset errors
-    setEmailError(null)
-    setPasswordError(null)
-
-    // Validate inputs
-    let isValid = true
-
+    // Validate email
     if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address")
-      isValid = false
+      setValidationError("Please enter a valid email address")
+      return
     }
 
-    if (!validatePassword(password)) {
-      setPasswordError("Password must be at least 8 characters")
-      isValid = false
+    // Validate password
+    if (password.length < 6) {
+      setValidationError("Password must be at least 6 characters")
+      return
     }
 
-    if (isValid) {
-      await login(email, password)
-    }
+    setValidationError(null)
+    await login(email, password)
   }
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
-        <CardDescription>
-          Enter your credentials to access your account
-          {tenant && ` on ${tenant}`}
-        </CardDescription>
+        <CardTitle className="text-2xl">Sign In</CardTitle>
+        <CardDescription>Enter your credentials to access your account</CardDescription>
       </CardHeader>
       <CardContent>
+        {(error || validationError) && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{validationError || error}</AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -67,14 +65,12 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              aria-invalid={emailError ? "true" : "false"}
             />
-            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <a href="/forgot-password" className="text-sm text-primary hover:underline">
+              <a href="#" className="text-sm text-primary hover:underline">
                 Forgot password?
               </a>
             </div>
@@ -84,17 +80,15 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              aria-invalid={passwordError ? "true" : "false"}
             />
-            {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
-
-        <div className="relative my-6">
+      </CardContent>
+      <CardFooter className="flex flex-col">
+        <div className="relative my-4 w-full">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -102,16 +96,7 @@ export function LoginForm() {
             <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
-
-        <AuthButtons />
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <a href="/signup" className="text-primary hover:underline">
-            Sign up
-          </a>
-        </p>
+        <AuthButtons tenantId={tenantId} />
       </CardFooter>
     </Card>
   )

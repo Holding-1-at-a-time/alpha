@@ -1,161 +1,209 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { useTenant } from "@/lib/tenantContext"
+import { type ReactNode, createContext, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { ConvexProvider } from "convex/react"
+import { ConvexReactClient } from "convex/react"
 import { logger } from "@/lib/logger"
-import { initializeAuth, type User } from "@/lib/auth"
 
-interface AuthContextType {
+// Initialize the Convex client
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL || "")
+
+// Auth context type definition
+type AuthContextType = {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
+  tenantId: string | null
   login: (email: string, password: string) => Promise<void>
   loginWithProvider: (provider: string) => Promise<void>
   logout: () => Promise<void>
   error: string | null
 }
 
+// User type definition
+export type User = {
+  id: string
+  name: string | null
+  email: string
+  role: string
+  tenantId: string
+  image?: string | null
+}
+
+// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+// Auth provider props
+interface AuthProviderProps {
+  children: ReactNode
+  initialTenantId?: string
+}
+
+export function AuthProvider({ children, initialTenantId }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(initialTenantId || null)
   const router = useRouter()
-  const pathname = usePathname()
-  const tenant = useTenant()
 
+  // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        setIsLoading(true)
-        const auth = await initializeAuth()
+        // Check for existing session in localStorage or cookies
+        const token = localStorage.getItem("auth_token")
 
-        // Check if user is already authenticated
-        const currentUser = await auth.getCurrentUser()
-
-        if (currentUser) {
-          // Validate that the user has access to this tenant
-          if (tenant && tenant.id && currentUser.tenantId !== tenant.id) {
-            logger.warn("User does not have access to this tenant", {
-              userId: currentUser.id,
-              userTenant: currentUser.tenantId,
-              requestedTenant: tenant.id,
-            })
-            await auth.logout()
-            setUser(null)
-            if (!pathname.startsWith("/login")) {
-              router.push("/login")
-            }
-          } else {
-            setUser(currentUser)
+        if (token) {
+          // In a real implementation, validate the token and fetch user data
+          // For now, we'll simulate a successful auth
+          const userData: User = {
+            id: "user_123",
+            name: "Demo User",
+            email: "user@example.com",
+            role: "admin",
+            tenantId: tenantId || "demo",
+            image: null,
           }
-        } else if (isProtectedRoute(pathname)) {
-          // Redirect to login if not authenticated and trying to access protected route
-          const loginUrl =
-            tenant && tenant.id
-              ? `/login?tenant=${tenant.id}&redirect=${encodeURIComponent(pathname)}`
-              : `/login?redirect=${encodeURIComponent(pathname)}`
-          router.push(loginUrl)
+          setUser(userData)
         }
       } catch (err) {
-        logger.error("Error initializing auth", err as Error)
+        logger.error("Auth initialization error", err as Error)
         setError("Failed to initialize authentication")
       } finally {
         setIsLoading(false)
       }
     }
 
-    initAuth()
-  }, [pathname, router, tenant])
+    initializeAuth()
+  }, [tenantId])
 
+  // Login with email and password
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true)
       setError(null)
-      const auth = await initializeAuth()
-      const user = await auth.login(email, password, tenant?.id)
-      setUser(user)
 
-      // Get redirect URL from query params or default to tenant home
-      const params = new URLSearchParams(window.location.search)
-      const redirectUrl = params.get("redirect") || `/${tenant?.id || ""}`
-      router.push(redirectUrl)
+      // In a real implementation, this would call your auth provider's API
+      // For now, we'll simulate a successful login
+      if (email && password) {
+        // Simulate API call delay
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Store token in localStorage
+        localStorage.setItem("auth_token", "mock_token_123")
+
+        // Set user data
+        const userData: User = {
+          id: "user_123",
+          name: email.split("@")[0],
+          email,
+          role: "admin",
+          tenantId: tenantId || "demo",
+          image: null,
+        }
+        setUser(userData)
+
+        // Redirect to dashboard
+        router.push(`/${tenantId || "demo"}/dashboard`)
+      } else {
+        throw new Error("Email and password are required")
+      }
     } catch (err) {
-      logger.error("Login failed", err as Error)
-      setError("Invalid email or password")
+      logger.error("Login error", err as Error)
+      setError((err as Error).message || "Failed to login")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Login with OAuth provider
   const loginWithProvider = async (provider: string) => {
     try {
       setIsLoading(true)
       setError(null)
-      const auth = await initializeAuth()
-      await auth.loginWithProvider(provider, tenant?.id)
-      // The page will be redirected by the provider, so we don't need to do anything else here
+
+      // In a real implementation, this would redirect to the OAuth provider
+      // For now, we'll simulate a successful login
+
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Store token in localStorage
+      localStorage.setItem("auth_token", "mock_token_123")
+
+      // Set user data
+      const userData: User = {
+        id: "user_123",
+        name: "OAuth User",
+        email: "oauth@example.com",
+        role: "admin",
+        tenantId: tenantId || "demo",
+        image: null,
+      }
+      setUser(userData)
+
+      // Redirect to dashboard
+      router.push(`/${tenantId || "demo"}/dashboard`)
     } catch (err) {
-      logger.error(`Login with ${provider} failed`, err as Error)
+      logger.error(`Login with ${provider} error`, err as Error)
       setError(`Failed to login with ${provider}`)
+    } finally {
       setIsLoading(false)
     }
   }
 
+  // Logout
   const logout = async () => {
     try {
       setIsLoading(true)
-      const auth = await initializeAuth()
-      await auth.logout()
+
+      // Clear token from localStorage
+      localStorage.removeItem("auth_token")
+
+      // Clear user data
       setUser(null)
+
+      // Redirect to home
       router.push("/")
     } catch (err) {
-      logger.error("Logout failed", err as Error)
+      logger.error("Logout error", err as Error)
       setError("Failed to logout")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Update tenant ID when it changes
+  useEffect(() => {
+    if (initialTenantId && initialTenantId !== tenantId) {
+      setTenantId(initialTenantId)
+    }
+  }, [initialTenantId, tenantId])
+
+  const value = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    tenantId,
+    login,
+    loginWithProvider,
+    logout,
+    error,
+  }
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        loginWithProvider,
-        logout,
-        error,
-      }}
-    >
-      {children}
+    <AuthContext.Provider value={value}>
+      <ConvexProvider client={convex}>{children}</ConvexProvider>
     </AuthContext.Provider>
   )
 }
 
+// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
-}
-
-// Helper function to determine if a route should be protected
-function isProtectedRoute(pathname: string): boolean {
-  // Exclude public routes
-  const publicRoutes = ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/docs", "/pricing"]
-
-  // Check if the path is in the public routes list
-  for (const route of publicRoutes) {
-    if (pathname === route || pathname.startsWith(`${route}/`)) {
-      return false
-    }
-  }
-
-  // Consider all other routes as protected
-  return true
 }

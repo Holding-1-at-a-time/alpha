@@ -1,151 +1,90 @@
-// This is a placeholder for the actual Convex functions
-// In a real implementation, you would use the Convex SDK
-
-// Example of what this file might look like with actual Convex SDK:
-
-/*
 import { mutation, query } from "./_generated/server"
 import { v } from "convex/values"
 
 // Register a new user
 export const registerUser = mutation({
   args: {
-    authId: v.string(),
     email: v.string(),
     name: v.string(),
     tenantId: v.string(),
+    authProviderId: v.string(),
     role: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Check if user already exists
     const existingUser = await ctx.db
       .query("users")
-      .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .first()
-    
+
     if (existingUser) {
-      return existingUser._id
+      throw new Error("User already exists")
     }
-    
+
     // Create new user
     const userId = await ctx.db.insert("users", {
-      authId: args.authId,
       email: args.email,
       name: args.name,
       tenantId: args.tenantId,
+      authProviderId: args.authProviderId,
       role: args.role || "user",
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     })
-    
-    return userId
+
+    return { userId }
   },
 })
 
 // Get user profile
 export const getUserProfile = query({
-  args: {
-    userId: v.optional(v.id("users")),
-  },
+  args: { userId: v.string() },
   handler: async (ctx, args) => {
-    // If no userId provided, use the authenticated user
-    const identity = await ctx.auth.getUserIdentity()
-    
-    if (!identity) {
-      throw new Error("Unauthenticated")
-    }
-    
-    const authId = identity.tokenIdentifier
-    
-    // If userId is provided, check if the requesting user has permission to view it
-    if (args.userId) {
-      // Get the requested user
-      const requestedUser = await ctx.db.get(args.userId)
-      
-      if (!requestedUser) {
-        throw new Error("User not found")
-      }
-      
-      // Get the current user
-      const currentUser = await ctx.db
-        .query("users")
-        .withIndex("by_auth_id", (q) => q.eq("authId", authId))
-        .first()
-      
-      if (!currentUser) {
-        throw new Error("Current user not found")
-      }
-      
-      // Check if the current user has permission to view the requested user
-      // Only allow if they are in the same tenant or the current user is an admin
-      if (currentUser.tenantId !== requestedUser.tenantId && currentUser.role !== "admin") {
-        throw new Error("Unauthorized")
-      }
-      
-      return requestedUser
-    }
-    
-    // Get the current user
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth_id", (q) => q.eq("authId", authId))
-      .first()
-    
+    const user = await ctx.db.get(args.userId)
+
     if (!user) {
       throw new Error("User not found")
     }
-    
-    return user
+
+    // Get tenant info
+    const tenant = await ctx.db
+      .query("tenants")
+      .withIndex("by_id", (q) => q.eq("id", user.tenantId))
+      .first()
+
+    return {
+      ...user,
+      tenant: tenant || null,
+    }
   },
 })
 
-// Check if user has a specific role
-export const hasRole = query({
-  args: {
-    role: v.string(),
-  },
+// Check if user has access to tenant
+export const validateTenantAccess = query({
+  args: { userId: v.string(), tenantId: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity()
-    
-    if (!identity) {
-      return false
-    }
-    
-    const authId = identity.tokenIdentifier
-    
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_auth_id", (q) => q.eq("authId", authId))
-      .first()
-    
+    const user = await ctx.db.get(args.userId)
+
     if (!user) {
       return false
     }
-    
-    return user.role === args.role
+
+    // Check if user belongs to tenant
+    return user.tenantId === args.tenantId
   },
 })
-*/
 
-// For now, we'll use a mock implementation
-export const mockConvexAuth = {
-  registerUser: async (user: any) => {
-    console.log("Registering user:", user)
-    return "user_123"
-  },
+// Check if user has required role
+export const validateUserRole = query({
+  args: { userId: v.string(), requiredRoles: v.array(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId)
 
-  getUserProfile: async (userId?: string) => {
-    console.log("Getting user profile:", userId || "current user")
-    return {
-      id: "user_123",
-      email: "demo@example.com",
-      name: "Demo User",
-      tenantId: "demo",
-      role: "admin",
+    if (!user || !user.role) {
+      return false
     }
-  },
 
-  hasRole: async (role: string) => {
-    console.log("Checking if user has role:", role)
-    return role === "admin" || role === "user"
+    // Check if user has required role
+    return args.requiredRoles.includes(user.role)
   },
-}
+})
