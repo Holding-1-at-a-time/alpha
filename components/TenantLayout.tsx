@@ -28,7 +28,7 @@ export default function TenantLayout({ children, tenantId }: TenantLayoutProps) 
         <div className="tenant-header border-b bg-muted/40 px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary/20"></div>
+              <div className="h-8 w-8 rounded-full bg-primary/20" />
               <span className="font-medium capitalize">{tenantId} Workspace</span>
             </div>
             {isAuthenticated && (

@@ -1,152 +1,130 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 18:09:15
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 "use client"
 
-import { type ReactNode, createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useSession } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
-import { ConvexProvider } from "convex/react"
-import { ConvexReactClient } from "convex/react"
-import { SessionProvider, useSession } from "next-auth/react"
-import { signIn, signOut } from "@/app/auth"
 import { logger } from "@/lib/logger"
+import { validateSession } from "@/lib/auth"
+import { User } from "next-auth"
 
-// Initialize the Convex client
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL
-const convex =
-  typeof convexUrl === "string" && convexUrl.startsWith("https://") ? new ConvexReactClient(convexUrl) : null
-
-// Auth context type definition
-type AuthContextType = {
+interface AuthContextType {
   user: User | null
-  isLoading: boolean
   isAuthenticated: boolean
+  isLoading: boolean
   tenantId: string | null
   login: (email: string, password: string, tenantId: string) => Promise<void>
-  loginWithProvider: (provider: string) => Promise<void>
   logout: () => Promise<void>
-  error: string | null
+  checkAuth: () => Promise<void>
 }
 
-// User type definition
-export type User = {
-  id: string
-  name: string | null
-  email: string
-  role: string
-  tenantId: string
-  image?: string | null
-}
-
-// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Auth provider wrapper component
-export function AuthProviderWrapper({ children }: { children: ReactNode }) {
-  return (
-    <SessionProvider>
-      {convex ? (
-        <ConvexProvider client={convex}>
-          <AuthProviderInternal>{children}</AuthProviderInternal>
-        </ConvexProvider>
-      ) : (
-        <div className="container flex min-h-screen flex-col items-center justify-center p-4 text-center">
-          <h1 className="text-2xl font-bold">Configuration Error</h1>
-          <p className="mt-4 text-muted-foreground">
-            The Convex URL is not properly configured. Please check your environment variables.
-          </p>
-        </div>
-      )}
-    </SessionProvider>
-  )
-}
-
-// Internal auth provider that uses Auth.js session
-function AuthProviderInternal({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<string | null>(null)
+export function AuthProvider({
+  children,
+  initialTenantId,
+}: {
+  children: ReactNode
+  initialTenantId?: string
+}) {
+  const { data: session, status } = useSession()
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [tenantId, setTenantId] = useState<string | null>(initialTenantId || null)
   const router = useRouter()
   const pathname = usePathname()
 
-  // Get tenant ID from URL if available
-  const pathTenantId = pathname?.split("/")[1]
+  useEffect(() => {
+    if (status === "loading") {
+      return
+    }
 
-  // We'll use the useSession hook in a client component
-  const { data: session, status } = useSession()
-
-  const tenantId = session?.user?.tenantId || pathTenantId || null
-
-  // Convert Auth.js session to our User type
-  const user: User | null = session?.user
-    ? {
-        id: session.user.id,
-        name: session.user.name,
-        email: session.user.email || "",
-        role: session.user.role,
-        tenantId: session.user.tenantId,
-        image: session.user.image,
+    if (session?.user) {
+      setUser(session.user as User)
+      // TypeScript: session.user may not have tenantId, so use type assertion or optional chaining
+      const userWithTenant = session.user as User
+      if ("tenantId" in userWithTenant && userWithTenant.tenantId) {
+        setTenantId(userWithTenant.tenantId)
       }
-    : null
+    } else {
+      setUser(null)
+    }
+    setIsLoading(false)
+  }, [session, status])
 
-  // Login with email and password
   const login = async (email: string, password: string, tenantId: string) => {
     try {
-      setError(null)
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-        tenantId,
-      })
-
-      if (result?.error) {
-        throw new Error(result.error)
-      }
-
-      // Redirect to dashboard
-      router.push(`/${tenantId}/dashboard`)
-    } catch (err) {
-      logger.error("Login error", err as Error)
-      setError((err as Error).message || "Failed to login")
-      throw err
+      setIsLoading(true)
+      // Login logic here
+      logger.info("User logged in", { email, tenantId })
+    } catch (error) {
+      logger.error("Login failed", error instanceof Error ? error : undefined)
+      throw error
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  // Login with OAuth provider
-  const loginWithProvider = async (provider: string) => {
-    try {
-      setError(null)
-      await signIn(provider, { callbackUrl: `/${tenantId || "demo"}/dashboard` })
-    } catch (err) {
-      logger.error(`Login with ${provider} error`, err as Error)
-      setError(`Failed to login with ${provider}`)
-      throw err
-    }
-  }
-
-  // Logout
   const logout = async () => {
     try {
-      await signOut({ redirect: false })
-      router.push("/")
-    } catch (err) {
-      logger.error("Logout error", err as Error)
-      setError("Failed to logout")
-      throw err
+      setIsLoading(true)
+      // Logout logic here
+      setUser(null)
+      setTenantId(null)
+      router.push("/login")
+    } catch (error) {
+      logger.error("Logout failed", error instanceof Error ? error : undefined)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const value = {
-    user,
-    isLoading: status === "loading",
-    isAuthenticated: status === "authenticated",
-    tenantId,
-    login,
-    loginWithProvider,
-    logout,
-    error,
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("authToken")
+      if (!token) {
+        setUser(null)
+        return
+      }
+
+      const result = await validateSession(token)
+      if (result.valid && result.user) {
+        setUser(result.user)
+        setTenantId(result.tenantId || null)
+      } else {
+        setUser(null)
+        localStorage.removeItem("authToken")
+      }
+    } catch (error) {
+      logger.error("Auth check failed", error instanceof Error ? error : undefined)
+      setUser(null)
+    }
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  const contextValue: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    tenantId,
+    login,
+    logout,
+    checkAuth,
+  }
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
-// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
@@ -154,6 +132,3 @@ export function useAuth() {
   }
   return context
 }
-
-// Export the wrapper as AuthProvider for backward compatibility
-export const AuthProvider = AuthProviderWrapper

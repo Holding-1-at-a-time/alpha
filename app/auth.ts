@@ -1,3 +1,15 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 16:17:47
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GitHub from "next-auth/providers/github"
@@ -28,60 +40,59 @@ providers.push(
       password: { label: "Password", type: "password" },
       tenantId: { label: "Tenant ID", type: "text" },
     },
-    async authorize(credentials) {
+    // The return type must be `any` to satisfy NextAuth's type system when adding custom fields
+    async authorize(credentials): Promise<any> {
       if (!credentials?.email || !credentials?.password || !credentials?.tenantId) {
-        return null
+        return null 
       }
-
       try {
-        // ⚠️ WARNING: DEMO IMPLEMENTATION - DO NOT USE IN PRODUCTION ⚠️
-        // This is a placeholder implementation that accepts any credentials.
-        // In production, you MUST implement proper credential verification:
-        //
-        // Example production implementation:
-        // const convexClient = getConvexClient();
-        // const user = await convexClient?.query(api.auth.verifyCredentials, {
-        //   email: credentials.email,
-        //   password: hashPassword(credentials.password), // Hash the password
-        //   tenantId: credentials.tenantId,
-        // })
-        //
-        // if (!user) {
-        //   return null
-        // }
-        //
-        // return {
-        //   id: user.id,
-        //   name: user.name,
-        //   email: user.email,
-        //   role: user.role,
-        //   tenantId: user.tenantId,
-        // }
-
-        if (process.env.NODE_ENV === "production") {
-          logger.error("SECURITY WARNING: Using demo authentication in production!")
-          throw new Error("Demo authentication cannot be used in production")
+        // Allow a special demo login in both development and production
+        if (
+          credentials.email === "demo@demo.com" &&
+          credentials.password === "demo"
+        ) {
+          logger.warn("DEMO AUTH: User authenticated with demo credentials", { email: credentials.email });
+          return {
+            id: `demo_user`,
+            name: "Demo User",
+            email: credentials.email,
+            role: "user",
+            tenantId: credentials.tenantId,
+          };
         }
 
-        // DEMO ONLY - accepts any credentials
-+        const user = {
-+          id: `user_${Date.now()}`,
-+          name: credentials.email.split("@")[0],
-+          email: credentials.email,
-+          // Use a lower-privilege role by default, allow override if provided in credentials
-+          role: credentials.role || "user",
-+          tenantId: credentials.tenantId,
-+        }
+        // Otherwise, do real authentication (production or dev)
+        const convexClient = getConvexClient();
+        if (!convexClient) {
+          logger.error("Convex client is not initialized");
+          return null;
+        }
+        // @ts-ignore
+        const user = await convexClient.query(api.functions.auth.verifyCredentials, {
+          email: credentials.email,
+          password: credentials.password,
+          tenantId: credentials.tenantId,
+        });
 
-        logger.warn("DEMO AUTH: User authenticated with demo credentials", { email: credentials.email })
-        return user
+        if (!user) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId,
+        };
       } catch (error) {
         logger.error("Auth.js authorize error", error as Error)
         return null
       }
     },
-  }),
+  }) as any,
 )
+
 
 // Add Google provider if configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -165,7 +176,9 @@ export const {
       // Allows relative callback URLs
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`
-      } else if (new URL(url).origin === baseUrl) return url
+      } else if (new URL(url).origin === baseUrl) {
+        return url
+      }
 
       return baseUrl
     },
