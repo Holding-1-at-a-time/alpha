@@ -28,22 +28,18 @@ interface TenantContextType {
   tenant: TenantMeta
 }
 
-// Create context at the module level, not inside the component
 const TenantContext = createContext<TenantContextType | undefined>(undefined)
 
 export function TenantProvider(props: { children: ReactNode; tenantId: string }) {
-  // Use props.tenantId instead of tenantId
-  // Remove reference to undefined getTenantConfig function
   const tenant: TenantMeta = {
     id: props.tenantId,
     name: props.tenantId.charAt(0).toUpperCase() + props.tenantId.slice(1),
-    primaryColor: "#3b82f6", // Default to blue
+    primaryColor: "#3b82f6",
     features: ["dashboard", "projects", "team"],
   }
 
   logger.info(`TenantProvider initialized with tenant: ${props.tenantId}`)
 
-  // Add proper return statement
   return <TenantContext.Provider value={{ tenant }}>{props.children}</TenantContext.Provider>
 }
 
