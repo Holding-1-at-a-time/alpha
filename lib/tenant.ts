@@ -11,7 +11,6 @@
     * - Modification    : 
 **/
 
-import { NextRequest } from "next/server"
 
 export function getTenantFromRequest(request: NextRequest): string | null {
   const tenantFromCookie = request.cookies.get("tenantId")?.value

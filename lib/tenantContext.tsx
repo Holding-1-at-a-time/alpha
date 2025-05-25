@@ -16,6 +16,7 @@ import { createContext, useContext, type ReactNode } from "react"
 import React from "react";
 import { logger } from "./logger"
 
+
 export interface TenantMeta {
   id: string
   name?: string
@@ -50,3 +51,5 @@ export function useTenant() {
   }
   return context.tenant
 }
+
+export { getTenantFromRequest } from "./tenant";
