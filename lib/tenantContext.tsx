@@ -16,7 +16,6 @@ import { createContext, useContext, type ReactNode } from "react"
 import type { NextRequest } from "next/server"
 import { logger } from "./logger"
 
-
 export interface TenantMeta {
   id: string
   name?: string
@@ -56,10 +55,7 @@ export function useTenant() {
   return context.tenant
 }
 
-<<<<<<< HEAD
-export { getTenantFromRequest } from "./tenant";
-=======
-// Add back the getTenantFromRequest function
+// Add the missing getTenantFromRequest function
 export function getTenantFromRequest(request: NextRequest): string | null {
   const tenantFromCookie = request.cookies.get("tenantId")?.value
   if (tenantFromCookie) {
@@ -83,4 +79,3 @@ export function getTenantFromRequest(request: NextRequest): string | null {
 
   return null
 }
->>>>>>> a8a1decc05a6f4127687bb942bfd4a4005085d4b
