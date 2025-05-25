@@ -1,16 +1,3 @@
-/**
-    * @description      : 
-    * @author           : rrome
-    * @group            : 
-    * @created          : 24/05/2025 - 18:18:00
-    * 
-    * MODIFICATION LOG
-    * - Version         : 1.0.0
-    * - Date            : 24/05/2025
-    * - Author          : rrome
-    * - Modification    : 
-**/
-// app/layout.tsx
 import Navbar from "./global-components/Navbar";
 import Footer from "./global-components/Footer";
 import { cookies } from "next/headers";
