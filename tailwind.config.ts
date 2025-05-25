@@ -1,7 +1,19 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 17:08:37
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 import type { Config } from "tailwindcss"
 
 const config = {
-  darkMode: ["class"],
+  darkMode: ["class", "dark"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",

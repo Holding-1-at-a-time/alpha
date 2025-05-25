@@ -106,7 +106,6 @@ export default defineSchema({
     .index("by_email_and_tenant", ["email", "tenantId"])
     .index("by_token", ["token"])
     .index("by_tenant", ["tenantId"]),
-<<<<<<< HEAD
 
   authProviders: defineTable({
     tenantId: v.id("tenants"),
@@ -114,10 +113,7 @@ export default defineSchema({
     providerName: v.string(),
     updatedAt: v.string(),
   })
-  .index("by_tenant", ["tenantId"])
-  .index("by_provider", ["providerId"])
-  .index("by_tenant_and_provider", ["tenantId", "providerId"]),
+    .index("by_tenant", ["tenantId"])
+    .index("by_provider", ["providerId"])
+    .index("by_tenant_and_provider", ["tenantId", "providerId"]),
 });
-=======
-});
->>>>>>> c80eb3bc71a384b3ed8ca3fda961e70d89a7228b

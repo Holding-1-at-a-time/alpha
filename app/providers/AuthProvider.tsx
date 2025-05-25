@@ -1,3 +1,15 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 18:09:15
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
@@ -5,7 +17,7 @@ import { useSession } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
 import { logger } from "@/lib/logger"
 import { validateSession } from "@/lib/auth"
-import type { User } from "@/types/next-auth"
+import { User } from "next-auth"
 
 interface AuthContextType {
   user: User | null
@@ -34,12 +46,16 @@ export function AuthProvider({
   const pathname = usePathname()
 
   useEffect(() => {
-    if (status === "loading") return
+    if (status === "loading") {
+      return
+    }
 
     if (session?.user) {
       setUser(session.user as User)
-      if (session.user.tenantId) {
-        setTenantId(session.user.tenantId)
+      // TypeScript: session.user may not have tenantId, so use type assertion or optional chaining
+      const userWithTenant = session.user as User
+      if ("tenantId" in userWithTenant && userWithTenant.tenantId) {
+        setTenantId(userWithTenant.tenantId)
       }
     } else {
       setUser(null)
@@ -53,7 +69,7 @@ export function AuthProvider({
       // Login logic here
       logger.info("User logged in", { email, tenantId })
     } catch (error) {
-      logger.error("Login failed", error)
+      logger.error("Login failed", error instanceof Error ? error : undefined)
       throw error
     } finally {
       setIsLoading(false)
@@ -68,7 +84,7 @@ export function AuthProvider({
       setTenantId(null)
       router.push("/login")
     } catch (error) {
-      logger.error("Logout failed", error)
+      logger.error("Logout failed", error instanceof Error ? error : undefined)
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +107,7 @@ export function AuthProvider({
         localStorage.removeItem("authToken")
       }
     } catch (error) {
-      logger.error("Auth check failed", error)
+      logger.error("Auth check failed", error instanceof Error ? error : undefined)
       setUser(null)
     }
   }

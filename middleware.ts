@@ -1,10 +1,22 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 17:40:26
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getTenantFromRequest } from "@/lib/tenantContext"
+import { getTenantFromRequest } from "@/lib/tenant"
 
 export async function middleware(request: NextRequest) {
   // Extract tenant from request (subdomain or path)
-  const tenant = getTenantFromRequest(request)
+  const tenant = getTenantFromRequest(request);  
 
   // If no tenant or www, redirect to landing page
   if (!tenant || tenant === "www") {

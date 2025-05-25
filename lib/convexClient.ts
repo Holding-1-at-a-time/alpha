@@ -1,3 +1,15 @@
+/**
+    * @description      : 
+    * @author           : rrome
+    * @group            : 
+    * @created          : 24/05/2025 - 17:00:41
+    * 
+    * MODIFICATION LOG
+    * - Version         : 1.0.0
+    * - Date            : 24/05/2025
+    * - Author          : rrome
+    * - Modification    : 
+**/
 import { ConvexHttpClient } from "convex/browser"
 import { auth } from "@/app/auth"
 import { logger } from "@/lib/logger"
@@ -25,11 +37,7 @@ export async function getConvexClient() {
     const session = await auth()
 
     if (session?.user) {
-      // Add tenant ID to headers
-      client.setHeaders({
-        "x-tenant-id": session.user.tenantId,
-        "x-user-id": session.user.id,
-      })
+      client.setAuth(session.user)
     }
 
     return client
